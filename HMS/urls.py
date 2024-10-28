@@ -3,4 +3,5 @@ from .views import home
 
 urlpatterns = [
     path('signup/',home,name="addding_new_user"),
+    # path("room/list",availrooms,name=availableRooms)
 ]

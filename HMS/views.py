@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from .models import Hotel
 
 @csrf_exempt
 @api_view(['POST'])
@@ -19,3 +20,16 @@ def home(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+
+def availrooms(request):
+    try:
+        if request.method == "GET":
+            return Hotel.rooms.all()   
+        return Response({
+            "msg":"Request method is not GET"
+        })
+    except Exception as e:
+        return Response({
+            "msg":e
+        })
+    
