@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .models import Hotel,Room
+from .models import Hotel,Room,Booking
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
@@ -183,4 +183,30 @@ def updateRoom(request,room_id):
             "msg":str(e)
         })
     
+
+
+
+
+
+# to checkout from a room
+@api_view(['POST'])
+def checkout(request):
+    try:
+        room_id = request.data.get('room_id')
+        curr_room = Room.objects.get(room_no = room_id)
+        data = {
+            "availability" : "Available"
+        }
+        serializer = RoomSerializer(curr_room,data=data,partial = True)
+        if serializer.is_valid():
+            serializer.save()
+        Booking.objects.get(room = room_id).delete()
+        return Response({
+            "msg":"You successfully Checkout",
+            "room_no":room_id
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
     
