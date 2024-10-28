@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import User
-from .serializer import Userserializer,RoomSerializer
+from .serializer import Userserializer,RoomSerializer,BookingSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -23,7 +23,7 @@ def home(request):
 @api_view(['GET'])
 def availrooms(request):
     try:
-        hotel = Hotel.objects.get(id=1)
+        hotel = Hotel.objects.get(hotel_id=1)
         rooms = hotel.rooms.all()
         print(rooms)
         if rooms.exists():
@@ -32,6 +32,19 @@ def availrooms(request):
         return Response({
             "msg":"NO rooms are there"
         })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
+    
+@api_view(['POST'])
+def bookRoom(request,hotel_id):
+    try:
+        serializer = BookingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             "msg":str(e)

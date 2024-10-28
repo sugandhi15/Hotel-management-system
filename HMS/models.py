@@ -71,7 +71,7 @@ class Status(models.TextChoices):
     CHECKED_OUT = 'Checked-Out'
 
 class Booking(models.Model):
-    customer = models.ForeignKey('User', on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='bookings')
     room = models.ForeignKey('Room', on_delete=models.CASCADE,related_name='rooms')
     check_in_date = models.DateField()
     check_out_date = models.DateField()
