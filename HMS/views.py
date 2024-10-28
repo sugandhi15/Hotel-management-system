@@ -123,7 +123,6 @@ def availrooms(request):
     try:
         hotel = Hotel.objects.get(hotel_id=1)
         rooms = hotel.rooms.all()
-        print(rooms)
         if rooms.exists():
             serializer = RoomSerializer(rooms,many=True)
             return Response(serializer.data)
@@ -210,3 +209,43 @@ def checkout(request):
             "msg":str(e)
         })
     
+
+
+
+
+# to get all the bookings for a customer
+@api_view(['GET'])
+def listBookings(request):
+    try:
+        user = User.objects.get(email = "shobha@gmail.com")
+        book = user.bookings.all()
+        if book.exists():
+            serializer = BookingSerializer(book,many=True)
+            return Response(serializer.data)
+        return Response({
+            "msg":"NO bookings are there"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
+
+
+
+
+
+#  to get all the bookings
+@api_view(['GET'])
+def bookingsList(request):
+    try:
+        booking = Booking.objects.all()
+        if booking.exists():
+            serializer = BookingSerializer(booking,many=True)
+            return Response(serializer.data)
+        return Response({
+            "msg":"NO bookings are there"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
