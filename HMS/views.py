@@ -11,16 +11,27 @@ from rest_framework.permissions import AllowAny
 from .models import Hotel
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.contrib.auth.tokens import default_token_generator
 
+
+
+
+
+#  to register a new user
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def home(request):
-    serializer = Userserializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        serializer = Userserializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
         
 
 
@@ -30,15 +41,19 @@ def home(request):
 def ResetPassword(request):
     try:
         email = request.data.get('email')
+
         if not email:
             return Response({
                 "error": "Email is required."
             })
         user = User.objects.get(email=email)
+        token = default_token_generator.make_token(user)
         password_reset_link = "http://localhost:8000/reset/"
+        password_reset_link_token = f'http://localhost:8000/password/reset/{token}'
         subject = "Password Reset Requested"
         message = render_to_string('reset.html', {
             'password_reset_link': password_reset_link,
+            'password_reset_link_token':password_reset_link_token,
             'username': user.first_name,
         })
 
@@ -50,12 +65,20 @@ def ResetPassword(request):
             "error": str(e)
         })
 
+
+
+
+
+# link sent on mail to reseet password
 @api_view(['POST'])
 def reset(request):
-    try:
-        
+    try: 
         email = request.data.get('email')
         new_password = request.data.get('password')
+        if not new_password:
+            return Response({
+                "password":"Please enter a password."
+            })
         if not email :
             return Response({
                 "email":"Please enter valid email"
@@ -69,6 +92,28 @@ def reset(request):
             'error': e
         })
 
+
+
+
+#  link on mail to set the password using token
+@api_view(['POST'])
+def setPassword(request,token):
+    try:
+        new_password = request.data.get('password')
+        for possible_user in User.objects.all():
+            if default_token_generator.check_token(possible_user, token):
+                user = possible_user
+                user.set_password(new_password) 
+                user.save()  
+                return Response({'message': 'Password updated successfully'})
+        return Response({
+            "msg":"Please enter a valid token"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
+    
 
 
 
@@ -91,6 +136,8 @@ def availrooms(request):
             "msg":str(e)
         })
     
+
+
 
 
 #  to book a room 
