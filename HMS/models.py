@@ -72,7 +72,7 @@ class Status(models.TextChoices):
 
 class Booking(models.Model):
     customer = models.ForeignKey('User', on_delete=models.CASCADE, related_name='bookings')
-    room = models.ForeignKey('Room', on_delete=models.CASCADE)
+    room = models.ForeignKey('Room', on_delete=models.CASCADE,related_name='rooms')
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.RESERVED)

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import User
-from .serializer import Userserializer
+from .serializer import Userserializer,RoomSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -20,16 +20,20 @@ def home(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
+@api_view(['GET'])
 def availrooms(request):
     try:
-        if request.method == "GET":
-            return Hotel.rooms.all()   
+        hotel = Hotel.objects.get(id=1)
+        rooms = hotel.rooms.all()
+        print(rooms)
+        if rooms.exists():
+            serializer = RoomSerializer(rooms,many=True)
+            return Response(serializer.data)
         return Response({
-            "msg":"Request method is not GET"
+            "msg":"NO rooms are there"
         })
     except Exception as e:
         return Response({
-            "msg":e
+            "msg":str(e)
         })
     
