@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .models import Hotel
+from .models import Hotel,Room
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
@@ -117,7 +117,6 @@ def setPassword(request,token):
 
 
 
-
 # gives the list of rooms
 @api_view(['GET'])
 def availrooms(request):
@@ -153,4 +152,35 @@ def bookRoom(request,hotel_id):
         return Response({
             "msg":str(e)
         })
+    
+
+
+
+
+# to update the room
+@api_view(['PUT'])
+def updateRoom(request,room_id):
+    try:
+        data = request.data 
+        if not data :
+             return Response({
+                 "msg":"Please enter data"
+             })
+        # room_no = room_id
+        room_info = Room.objects.get(room_no = room_id)
+        # room_type = request.data.get('room_type')
+        # price = request.data.get('price')
+        # availability = request.data.get('availability')
+        serializer = RoomSerializer(room_info,data = request.data,partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response({
+            "msg":"Please enter valid data"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
+    
     
