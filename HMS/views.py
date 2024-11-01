@@ -17,8 +17,10 @@ from django.contrib.auth.tokens import default_token_generator
 
 
 
-#  to register a new user
+
+
 @csrf_exempt
+#  to register a new user
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def home(request):
@@ -36,8 +38,12 @@ def home(request):
 
 
 
+
+
+
 #  to reset password without token
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def ResetPassword(request):
     try:
         email = request.data.get('email')
@@ -119,6 +125,7 @@ def setPassword(request,token):
 
 # gives the list of rooms
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def availrooms(request):
     try:
         hotel = Hotel.objects.get(hotel_id=1)
@@ -138,15 +145,22 @@ def availrooms(request):
 
 
 
-#  to book a room 
+#  to book a room accessible to customer
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def bookRoom(request,hotel_id):
     try:
-        serializer = BookingSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = request.user.email
+        user = User.objects.get(email = email)
+        if user.account_type == "Customer":
+            serializer = BookingSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "msg":"Sorry, U can not access this page"
+        })
     except Exception as e:
         return Response({
             "msg":str(e)
@@ -156,8 +170,10 @@ def bookRoom(request,hotel_id):
 
 
 
-# to update the room
+
+# to update the room accesible to hotel manager
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def updateRoom(request,room_id):
     try:
         data = request.data 
@@ -165,23 +181,26 @@ def updateRoom(request,room_id):
              return Response({
                  "msg":"Please enter data"
              })
-        # room_no = room_id
-        room_info = Room.objects.get(room_no = room_id)
-        # room_type = request.data.get('room_type')
-        # price = request.data.get('price')
-        # availability = request.data.get('availability')
-        serializer = RoomSerializer(room_info,data = request.data,partial = True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        email = request.user.email
+        user = User.objects.get(email = email)
+        if user.account_type == "Hotel Manager":
+            room_info = Room.objects.get(room_no = room_id)
+            serializer = RoomSerializer(room_info,data = request.data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response({
+                "msg":"Please enter valid data"
+            })
         return Response({
-            "msg":"Please enter valid data"
+            "msg":"Sorry, U can not access this page"
         })
     except Exception as e:
         return Response({
             "msg":str(e)
         })
     
+
 
 
 
@@ -189,35 +208,47 @@ def updateRoom(request,room_id):
 
 # to checkout from a room
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def checkout(request):
     try:
         room_id = request.data.get('room_id')
-        curr_room = Room.objects.get(room_no = room_id)
-        data = {
-            "availability" : "Available"
-        }
-        serializer = RoomSerializer(curr_room,data=data,partial = True)
-        if serializer.is_valid():
-            serializer.save()
-        Booking.objects.get(room = room_id).delete()
+        email = request.user.email
+        user = User.objects.get(email = email)
+        if user.account_type == "Hotel Manager":
+            curr_room = Room.objects.get(room_no = room_id)
+            data = {
+                "availability" : "Available"
+            }
+            serializer = RoomSerializer(curr_room,data=data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+            Booking.objects.get(room = room_id).delete()
+            return Response({
+                "msg":"You successfully Checkout",
+                "room_no":room_id
+            })
         return Response({
-            "msg":"You successfully Checkout",
-            "room_no":room_id
+            "msg":"Sorry, U can not access this page"
         })
     except Exception as e:
         return Response({
             "msg":str(e)
         })
-    
+
+
+
+
 
 
 
 
 # to get all the bookings for a customer
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def listBookings(request):
     try:
-        user = User.objects.get(email = "shobha@gmail.com")
+        email = request.user.email
+        user = User.objects.get(email = email)
         book = user.bookings.all()
         if book.exists():
             serializer = BookingSerializer(book,many=True)
@@ -234,18 +265,104 @@ def listBookings(request):
 
 
 
+
+
 #  to get all the bookings
 @api_view(['GET'])
 def bookingsList(request):
     try:
-        booking = Booking.objects.all()
-        if booking.exists():
-            serializer = BookingSerializer(booking,many=True)
-            return Response(serializer.data)
+        email = request.user.email
+        user = User.objects.get(email = email)
+        if user.account_type == "Hotel Manager":
+            booking = Booking.objects.all()
+            if booking.exists():
+                serializer = BookingSerializer(booking,many=True)
+                return Response(serializer.data)
+            return Response({
+                "msg":"NO bookings are there"
+            })
         return Response({
-            "msg":"NO bookings are there"
+            "msg":"Sorry, U can not access this page"
         })
     except Exception as e:
         return Response({
             "msg":str(e)
         })
+    
+
+
+
+
+
+
+# to cancel all the bookings by a user
+@api_view(['DELETE'])
+def cancelBooking(request):
+    try:
+        email = request.user.email
+        user = User.objects.get(email = email)
+        if user.account_type == "Hotel Manager":
+            user.bookings.all().delete()
+            return Response({
+                "msg":"canceled the booking successfully"
+            })
+        return Response({
+            "msg":"Sorry, U can not access this page"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        })
+    
+
+
+
+
+
+
+# to delete a user 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteUser(request):
+    try:
+        email = request.query_params.get('email')
+        email2 = request.user.email
+        user = User.objects.get(email = email2)
+        if user.account_type == "Admin":
+            print(email)
+            if not email:
+                return Response({"msg": "Email query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.get(email=email)
+            print(user)
+            user.delete()
+            print("deleted")
+            return Response({
+                "msg":"user deleted successfully"
+            }, status=status.HTTP_204_NO_CONTENT)
+        return Response({
+            "msg":"Sorry, U can not access this page"
+        })
+    except Exception as e:
+        return Response({
+            "msg":str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+
+
+
+
+
+#  to get list of all the users
+@api_view(['GET'])
+def availusers(request):
+    try:
+        user = User.objects.all()
+        serializer = Userserializer(user,many=True)
+        return Response(serializer.data)
+    except Exception as e :
+        return Response({
+            "msg":str(e)
+        })
+

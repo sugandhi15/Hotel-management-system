@@ -12,11 +12,11 @@ class AccountType(models.TextChoices):
     ADMIN = 'Admin'
 
 class User(AbstractBaseUser):
-    first_name = models.CharField(max_length=20)
+    username = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=64)
-    account_type = models.CharField(max_length=20,choices=AccountType.choices,default=AccountType.CUSTOMER,)
+    account_type = models.CharField(max_length=20,choices=AccountType.choices,default=AccountType.CUSTOMER)
 
     USERNAME_FIELD = 'email'
 
