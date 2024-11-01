@@ -325,17 +325,14 @@ def cancelBooking(request):
 @permission_classes([IsAuthenticated])
 def deleteUser(request):
     try:
-        email = request.query_params.get('email')
+        email1 = request.query_params.get('email')
+        if not email1:
+            return Response({"msg": "Email query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
         email2 = request.user.email
         user = User.objects.get(email = email2)
+        user.is_superuser = True
         if user.account_type == "Admin":
-            print(email)
-            if not email:
-                return Response({"msg": "Email query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
-            user = User.objects.get(email=email)
-            print(user)
-            user.delete()
-            print("deleted")
+            User.objects.get(email=email1).delete()
             return Response({
                 "msg":"user deleted successfully"
             }, status=status.HTTP_204_NO_CONTENT)
