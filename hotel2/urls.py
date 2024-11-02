@@ -10,5 +10,4 @@ urlpatterns = [
     path('',include('HMS.urls')),
     path("delete",deleteUser,name="deleteUser"),
     path('accounts/', include('allauth.urls')),
-    # path('accounts/', include('allauth.socialaccount.urls')),
 ]
