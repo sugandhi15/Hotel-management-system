@@ -363,3 +363,13 @@ def availusers(request):
             "msg":str(e)
         })
 
+
+
+
+
+
+@api_view(['GET'])
+def welcome(request):
+    return Response({
+        "msg":"Hello, welcome to Hotel Management System"
+    })
