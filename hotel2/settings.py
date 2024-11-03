@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'HMS.apps.HmsConfig',
     'rest_framework_simplejwt.token_blacklist',
+    # 'captcha',
     # oauth packages
     'django.contrib.sites',
     'allauth',
@@ -140,7 +141,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -152,6 +152,9 @@ REST_FRAMEWORK = {
    'rest_framework.permissions.AllowAny',
     ],
 }
+
+
+AUTH_USER_MODEL = 'HMS.User'
 
 #  for jwt
 
@@ -213,3 +216,8 @@ LOGOUT_REDIRECT_URL = "/accounts/"
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+
+# recaptcha
+
+RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY')

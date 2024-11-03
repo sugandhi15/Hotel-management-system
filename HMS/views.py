@@ -12,6 +12,7 @@ from .models import Hotel,Room,Booking
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
+# from .forms import SignupForm
 
 
 
@@ -28,6 +29,15 @@ def home(request):
         serializer = Userserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+        # form = SignupForm(request.POST)
+        # if form.is_valid():
+        #     form.save()
+        #     return Response({
+        #         "msg":"signed up successfully"
+        #     })
+        # return Response({
+        #     "msg":"Please enter valid data"
+        # })
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -156,6 +166,27 @@ def bookRoom(request,hotel_id):
             serializer = BookingSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                #  email to manager 
+                subject1 = "New Booking Alert"
+                manager_email='sugandhibansal26@gmail.com'
+                message1 = (
+                    f"Hello Manager,\n\n"
+                    f"A new booking has been made with the following details:\n"
+                    f"Check-in Date: {serializer.validated_data['check_in_date']}\n"
+                    f"Check-out Date: {serializer.validated_data['check_out_date']}\n\n"
+                    f"Please prepare accordingly."
+                )
+                send_mail(subject1, message1, "sugandhibansal26@gmail.com", [manager_email])
+                # email to customer
+                subject = "Confirm your room booking"
+                message = (
+                        f"Dear Customer,\n\n"
+                        f"Thank you for booking with us! Here are your booking details:\n"
+                        f"Check-in Date: {serializer.validated_data['check_in_date']}\n"
+                        f"Check-out Date: {serializer.validated_data['check_out_date']}\n\n"
+                        f"We look forward to your stay!"
+                    )
+                send_mail(subject, message, 'sugandhibansal26@gmail.com', [email])
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({

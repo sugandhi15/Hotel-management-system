@@ -1,8 +1,10 @@
 from django.urls import path
 from .views import home,availrooms,bookRoom,ResetPassword,reset,setPassword,updateRoom,checkout,listBookings,bookingsList,cancelBooking,availusers,welcome
+from rest_framework_simplejwt.views import  TokenObtainPairView
 
 urlpatterns = [
     path('signup/',home,name="addding_new_user"),
+    path('login',  TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('password/reset',ResetPassword,name="passwordReset"),
     path('reset/',reset,name="reset"),
     path('password/reset/<str:token>',setPassword,name="setPassword"),
