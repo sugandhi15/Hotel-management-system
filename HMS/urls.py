@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import home,availrooms,bookRoom,ResetPassword,reset,setPassword,updateRoom,checkout,listBookings,bookingsList,cancelBooking,availusers,welcome
-from rest_framework_simplejwt.views import  TokenObtainPairView
+from .views import home,availrooms,bookRoom,ResetPassword,reset,setPassword,updateRoom,checkout,listBookings,bookingsList,cancelBooking,availusers,welcome,deleteUser
+from rest_framework_simplejwt.views import  TokenObtainPairView,TokenRefreshView
 
 urlpatterns = [
     path('signup/',home,name="addding_new_user"),
     path('login',  TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),    
     path('password/reset',ResetPassword,name="passwordReset"),
     path('reset/',reset,name="reset"),
     path('password/reset/<str:token>',setPassword,name="setPassword"),
@@ -15,6 +16,7 @@ urlpatterns = [
     path("booking/list",listBookings,name="listBookings"),
     path("booking/all",bookingsList,name="bookingsList"),
     path("booking/cancel",cancelBooking,name="cancelBooking"),
+    path("delete",deleteUser,name="deleteUser"),
     path("users",availusers,name="users"), #to check users
     path("welcome",welcome), # to redirect after oauth 
 ]
