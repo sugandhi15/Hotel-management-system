@@ -57,7 +57,7 @@ class signup(APIView):
 
 #  to reset password without token
 class ResetPassword(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
     
     def post(self,request):
         try:
@@ -149,7 +149,7 @@ class setPassword(APIView):
 
 # gives the list of rooms
 class availrooms(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get(self,request):
         try:
@@ -172,7 +172,7 @@ class availrooms(APIView):
 
 #  to book a room accessible to customer
 class bookRoom(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def post(self,request,hotel_id):
         try:
@@ -290,7 +290,7 @@ def checkout(request):
 
 # to get all the bookings for a customer
 class listBookings(APIView):
-    permission_classes=(IsAuthenticated,)
+    permission_classes=[IsAuthenticated]
 
     def get(self,request):
         try:
@@ -316,7 +316,7 @@ class listBookings(APIView):
 
 #  to get all the bookings
 class bookingsList(APIView):
-    permission_classes=(IsAuthenticated,)
+    permission_classes=[IsAuthenticated]
 
     def get(self,request):
         try:
