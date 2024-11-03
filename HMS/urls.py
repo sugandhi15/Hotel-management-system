@@ -15,6 +15,6 @@ urlpatterns = [
     path("booking/list",listBookings,name="listBookings"),
     path("booking/all",bookingsList,name="bookingsList"),
     path("booking/cancel",cancelBooking,name="cancelBooking"),
-    path("users",availusers,name="users"),
-    path("welcome",welcome)
+    path("users",availusers,name="users"), #to check users
+    path("welcome",welcome), # to redirect after oauth 
 ]

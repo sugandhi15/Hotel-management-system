@@ -29,6 +29,9 @@ def home(request):
         serializer = Userserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # for recaptcha
         # form = SignupForm(request.POST)
         # if form.is_valid():
         #     form.save()
@@ -38,8 +41,6 @@ def home(request):
         # return Response({
         #     "msg":"Please enter valid data"
         # })
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             "msg":str(e)
@@ -57,7 +58,6 @@ def home(request):
 def ResetPassword(request):
     try:
         email = request.data.get('email')
-
         if not email:
             return Response({
                 "error": "Email is required."
@@ -239,13 +239,12 @@ def updateRoom(request,room_id):
 
 # to checkout from a room
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def checkout(request):
     try:
         room_id = request.data.get('room_id')
         email = request.user.email
         user = User.objects.get(email = email)
-        if user.account_type == "Hotel Manager":
+        if user.account_type == "Customer":
             curr_room = Room.objects.get(room_no = room_id)
             data = {
                 "availability" : "Available"
@@ -253,11 +252,11 @@ def checkout(request):
             serializer = RoomSerializer(curr_room,data=data,partial = True)
             if serializer.is_valid():
                 serializer.save()
-            Booking.objects.get(room = room_id).delete()
-            return Response({
-                "msg":"You successfully Checkout",
-                "room_no":room_id
-            })
+                Booking.objects.get(room = room_id).delete()
+                return Response({
+                    "msg":"You successfully Checkout",
+                    "room_no":room_id
+                })
         return Response({
             "msg":"Sorry, U can not access this page"
         })
@@ -332,7 +331,7 @@ def cancelBooking(request):
     try:
         email = request.user.email
         user = User.objects.get(email = email)
-        if user.account_type == "Hotel Manager":
+        if user.account_type == "Customer":
             user.bookings.all().delete()
             return Response({
                 "msg":"canceled the booking successfully"

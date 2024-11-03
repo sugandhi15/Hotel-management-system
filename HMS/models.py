@@ -3,22 +3,28 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,Permissi
 from django.utils.translation import gettext_lazy as _
 
 
+#  custom user model to make email as unique identifier
 class CustomUserManager(BaseUserManager):
-    """
-    Custom user model manager where email is the unique identifiers
-    for authentication instead of usernames.
-    """
+
     def create_user(self, email, password, **extra_fields):
-        """
-        Create and save a user with the given email and password.
-        """
         if not email:
             raise ValueError(_("The Email must be set"))
+        
+        # normalise_email - converts email to its standard form like in small letters
         email = self.normalize_email(email)
+        #  to make hotel manager as staff member
+        account_type = extra_fields.get('account_type', AccountType.CUSTOMER)
+        if account_type == AccountType.HOTEL_MANAGER:
+            extra_fields['is_staff'] = True
+        else:
+            extra_fields.setdefault("is_staff", False)
+        # creates a model for this user
         user = self.model(email=email, **extra_fields)
+        # set_password - stores the password in the database in hashed form
         user.set_password(password)
         user.save()
         return user
+
 
     def create_superuser(self, email, password, **extra_fields):
         """
@@ -27,12 +33,10 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError(_("Superuser must have is_staff=True."))
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError(_("Superuser must have is_superuser=True."))
+        
         return self.create_user(email, password, **extra_fields)
+    
+
 
 
 
@@ -42,6 +46,7 @@ class AccountType(models.TextChoices):
     CUSTOMER = 'Customer'
     HOTEL_MANAGER = 'Hotel Manager'
     ADMIN = 'Admin'
+
 
 class User(AbstractBaseUser,PermissionsMixin):
     first_name = models.CharField(max_length=20)
@@ -62,6 +67,8 @@ class User(AbstractBaseUser,PermissionsMixin):
     def __str__(self):
         return self.email
     
+
+
 
 
 

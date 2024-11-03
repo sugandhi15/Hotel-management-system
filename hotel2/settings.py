@@ -153,7 +153,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-
+#  to determione the user model that should be used for authentication
 AUTH_USER_MODEL = 'HMS.User'
 
 #  for jwt
