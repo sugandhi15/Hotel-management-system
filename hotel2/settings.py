@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'HMS.apps.HmsConfig',
     'rest_framework_simplejwt.token_blacklist',
     # 'captcha',
+    'django_recaptcha',
     # oauth packages
     'django.contrib.sites',
     'allauth',
@@ -219,32 +220,32 @@ LOGOUT_REDIRECT_URL = "/accounts/"
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'allauth_debug.log',  # Log file path
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',  # General Django logs
-        },
-        'allauth': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',  # Detailed allauth logs
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#         },
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': 'allauth_debug.log',  # Log file path
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'INFO',  # General Django logs
+#         },
+#         'allauth': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',  # Detailed allauth logs
+#             'propagate': True,
+#         },
+#     },
+# }
 
 # recaptcha
 

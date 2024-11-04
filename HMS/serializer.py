@@ -10,7 +10,7 @@ class Userserializer(serializers.ModelSerializer):
         user = User(
             email=validated_data['email'],
             #  here we have used and empty feild in get method to prevent error occuring on null value
-            first_name=validated_data.get('first_name', ''),
+            first_name=validated_data.get('first_name', 'user'),
             last_name=validated_data.get('last_name', ''),
             account_type=validated_data.get('account_type', 'Customer'),
             is_active=True

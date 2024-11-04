@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from .permissions import IsCustomer,IsManager,IsAdmin
-# from .forms import SignupForm
+from .forms import SignupForm
 
 
 
@@ -29,21 +29,26 @@ class signup(APIView):
 
     def post(self,request):
         try:
+            # serializer = Userserializer(data=request.data)
+            # if serializer.is_valid():
+            #     serializer.save()
+            #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # for recaptcha
+            form = SignupForm(request.POST)
+            if not form.is_valid():
+                return Response({
+                    "msg": "Invalid reCAPTCHA"
+                }, status=status.HTTP_400_BAD_REQUEST)
             serializer = Userserializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # for recaptcha
-            # form = SignupForm(request.POST)
-            # if form.is_valid():
-            #     form.save()
-            #     return Response({
-            #         "msg":"signed up successfully"
-            #     })
-            # return Response({
-            #     "msg":"Please enter valid data"
-            # })
+                return Response({
+                    "msg": "Signed up successfully"
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                 "msg":"error occured"
+            })
         except Exception as e:
             return Response({
                 "msg":"Internal server error"
@@ -221,34 +226,35 @@ class bookRoom(APIView):
 
 
 # to update the room accesible to hotel manager
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated , IsManager])
-def updateRoom(request,room_id):
-    try:
-        data = request.data 
-        if not data :
-             return Response({
-                 "msg":"Please enter data"
-             })
-        email = request.user.email
-        user = User.objects.get(email = email)
-        if user.account_type == "Hotel Manager":
-            room_info = Room.objects.get(room_no = room_id)
-            serializer = RoomSerializer(room_info,data = request.data,partial = True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+class updateRoom(APIView):
+    permission_classes = (IsAuthenticated , IsManager)
+
+    def put(request,room_id):
+        try:
+            data = request.data 
+            if not data :
+                return Response({
+                    "msg":"Please enter data"
+                })
+            email = request.user.email
+            user = User.objects.get(email = email)
+            if user.account_type == "Hotel Manager":
+                room_info = Room.objects.get(room_no = room_id)
+                serializer = RoomSerializer(room_info,data = request.data,partial = True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response({
+                    "msg":"Please enter valid data"
+                })
             return Response({
-                "msg":"Please enter valid data"
+                "msg":"Sorry, U can not access this page"
             })
-        return Response({
-            "msg":"Sorry, U can not access this page"
-        })
-    except Exception as e:
-        return Response({
-            "msg":"Internal server error"
-        })
-    
+        except Exception as e:
+            return Response({
+                "msg":"Internal server error"
+            })
+        
 
 
 
@@ -378,29 +384,23 @@ class cancelBooking(APIView):
 
 
 # to delete a user by admin
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated , IsAdmin])
-def deleteUser(request):
-    try:
-        email1 = request.query_params.get('email')
-        if not email1:
-            return Response({"msg": "Email query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
-        email2 = request.user.email
-        user = User.objects.get(email = email2)
-        user.is_superuser = True
-        if user.account_type == "Admin":
+class deleteUser(APIView):
+    permission_classes = (IsAuthenticated,IsAdmin)
+
+    def delete(request):
+        try:
+            email1 = request.query_params.get('email')
+            if not email1:
+                return Response({"msg": "Email query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
             User.objects.get(email=email1).delete()
             return Response({
                 "msg":"user deleted successfully"
             }, status=status.HTTP_204_NO_CONTENT)
-        return Response({
-            "msg":"Sorry, U can not access this page"
-        })
-    except Exception as e:
-        return Response({
-            "msg":"Internal server error"
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+        except Exception as e:
+            return Response({
+                "msg":"Internal server error"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
 
 
