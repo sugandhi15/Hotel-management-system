@@ -159,8 +159,7 @@ class availrooms(APIView):
 
     def get(self,request):
         try:
-            hotel = Hotel.objects.get(hotel_id=1)
-            rooms = hotel.rooms.all()
+            rooms = Room.objects.all()
             if rooms.exists():
                 serializer = RoomSerializer(rooms,many=True)
                 return Response(serializer.data)
