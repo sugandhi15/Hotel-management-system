@@ -12,12 +12,6 @@ class CustomUserManager(BaseUserManager):
         
         # normalise_email - converts email to its standard form like in small letters
         email = self.normalize_email(email)
-        #  to make hotel manager as staff member
-        account_type = extra_fields.get('account_type', AccountType.CUSTOMER)
-        if account_type == AccountType.HOTEL_MANAGER:
-            extra_fields['is_staff'] = True
-        else:
-            extra_fields.setdefault("is_staff", False)
         # creates a model for this user
         user = self.model(email=email, **extra_fields)
         # set_password - stores the password in the database in hashed form
@@ -26,15 +20,15 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
-    def create_superuser(self, email, password, **extra_fields):
-        """
-        Create and save a SuperUser with the given email and password.
-        """
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
+    # def create_superuser(self, email, password, **extra_fields):
+    #     """
+    #     Create and save a SuperUser with the given email and password.
+    #     """
+    #     extra_fields.setdefault("is_staff", True)
+    #     extra_fields.setdefault("is_superuser", True)
+    #     extra_fields.setdefault("is_active", True)
         
-        return self.create_user(email, password, **extra_fields)
+    #     return self.create_user(email, password, **extra_fields)
     
 
 
@@ -55,9 +49,9 @@ class User(AbstractBaseUser,PermissionsMixin):
     password = models.CharField(max_length=64)
     account_type = models.CharField(max_length=20,choices=AccountType.choices,default=AccountType.CUSTOMER)
 
-    is_staff = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    # is_staff = models.BooleanField(default=False)
+    # is_superuser = models.BooleanField(default=False)
+    # is_active = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

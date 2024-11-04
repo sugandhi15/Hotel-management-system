@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
+from .permissions import IsCustomer,IsManager,IsAdmin
 # from .forms import SignupForm
 
 
@@ -45,7 +46,7 @@ class signup(APIView):
             # })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
             
 
@@ -82,7 +83,7 @@ class ResetPassword(APIView):
         
         except Exception as e:
             return Response({
-                "error": str(e)
+                "error": "Internal server error"
             })
 
 
@@ -112,7 +113,7 @@ class reset(APIView):
             return Response({'message': 'Password updated successfully'})
         except Exception as e:
             return Response({
-                'error': e
+                'error': "Internal server error"
             })
 
 
@@ -138,7 +139,7 @@ class setPassword(APIView):
             })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
     
 
@@ -163,19 +164,21 @@ class availrooms(APIView):
             })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
         
 
 
 
 
+
 #  to book a room accessible to customer
 class bookRoom(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = ( IsAuthenticated ,IsCustomer)
 
-    def post(self,request,hotel_id):
+    def post(self,request):
         try:
+            hotel_id  = request.query_params.get('hotel_id')
             email = request.user.email
             user = User.objects.get(email = email)
             if user.account_type == "Customer":
@@ -190,17 +193,16 @@ class bookRoom(APIView):
                         f"A new booking has been made with the following details:\n"
                         f"Check-in Date: {serializer.validated_data['check_in_date']}\n"
                         f"Check-out Date: {serializer.validated_data['check_out_date']}\n\n"
-                        f"Please prepare accordingly."
                     )
                     send_mail(subject1, message1, "sugandhibansal26@gmail.com", [manager_email])
                     # email to customer
                     subject = "Confirm your room booking"
                     message = (
                             f"Dear Customer,\n\n"
-                            f"Thank you for booking with us! Here are your booking details:\n"
+                            f"You have made a booking for hotel room. Here are your booking details:\n"
                             f"Check-in Date: {serializer.validated_data['check_in_date']}\n"
                             f"Check-out Date: {serializer.validated_data['check_out_date']}\n\n"
-                            f"We look forward to your stay!"
+                            f"Thank you"
                         )
                     send_mail(subject, message, 'sugandhibansal26@gmail.com', [email])
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -210,7 +212,7 @@ class bookRoom(APIView):
             })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
     
 
@@ -220,7 +222,7 @@ class bookRoom(APIView):
 
 # to update the room accesible to hotel manager
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated , IsManager])
 def updateRoom(request,room_id):
     try:
         data = request.data 
@@ -244,7 +246,7 @@ def updateRoom(request,room_id):
         })
     except Exception as e:
         return Response({
-            "msg":str(e)
+            "msg":"Internal server error"
         })
     
 
@@ -254,32 +256,34 @@ def updateRoom(request,room_id):
 
 
 # to checkout from a room
-@api_view(['POST'])
-def checkout(request):
-    try:
-        room_id = request.data.get('room_id')
-        email = request.user.email
-        user = User.objects.get(email = email)
-        if user.account_type == "Customer":
-            curr_room = Room.objects.get(room_no = room_id)
-            data = {
-                "availability" : "Available"
-            }
-            serializer = RoomSerializer(curr_room,data=data,partial = True)
-            if serializer.is_valid():
-                serializer.save()
-                Booking.objects.get(room = room_id).delete()
-                return Response({
-                    "msg":"You successfully Checkout",
-                    "room_no":room_id
-                })
-        return Response({
-            "msg":"Sorry, U can not access this page"
-        })
-    except Exception as e:
-        return Response({
-            "msg":str(e)
-        })
+class checkout(APIView):
+    permission_classes = (IsAuthenticated , IsCustomer)
+
+    def post(request):
+        try:
+            room_id = request.data.get('room_id')
+            email = request.user.email
+            user = User.objects.get(email = email)
+            if user.account_type == "Customer":
+                curr_room = Room.objects.get(room_no = room_id)
+                data = {
+                    "availability" : "Available"
+                }
+                serializer = RoomSerializer(curr_room,data=data,partial = True)
+                if serializer.is_valid():
+                    serializer.save()
+                    Booking.objects.get(room = room_id).delete()
+                    return Response({
+                        "msg":"You successfully Checkout",
+                        "room_no":room_id
+                    })
+            return Response({
+                "msg":"Sorry, U can not access this page"
+            })
+        except Exception as e:
+            return Response({
+                "msg":"Internal server error"
+            })
 
 
 
@@ -290,7 +294,7 @@ def checkout(request):
 
 # to get all the bookings for a customer
 class listBookings(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=(IsAuthenticated , IsCustomer) 
 
     def get(self,request):
         try:
@@ -305,7 +309,7 @@ class listBookings(APIView):
             })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
 
 
@@ -314,9 +318,9 @@ class listBookings(APIView):
 
 
 
-#  to get all the bookings
+#  to get all the bookings for hotel manager
 class bookingsList(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=(IsAuthenticated , IsManager)
 
     def get(self,request):
         try:
@@ -335,7 +339,7 @@ class bookingsList(APIView):
             })
         except Exception as e:
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
     
 
@@ -344,25 +348,28 @@ class bookingsList(APIView):
 
 
 
-# to cancel all the bookings by a user
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def cancelBooking(request):
-    try:
-        email = request.user.email
-        user = User.objects.get(email = email)
-        if user.account_type == "Customer":
-            user.bookings.all().delete()
+# to cancel all the bookings by a customer
+# @api_view(['DELETE'])
+# @permission_classes([IsAuthenticated , IsCustomer])
+class cancelBooking(APIView):
+    permission_classes = (IsAuthenticated, IsCustomer)
+
+    def delete(request):
+        try:
+            email = request.user.email
+            user = User.objects.get(email = email)
+            if user.account_type == "Customer":
+                user.bookings.all().delete()
+                return Response({
+                    "msg":"canceled the booking successfully"
+                })
             return Response({
-                "msg":"canceled the booking successfully"
+                "msg":"Sorry, U can not access this page"
             })
-        return Response({
-            "msg":"Sorry, U can not access this page"
-        })
-    except Exception as e:
-        return Response({
-            "msg":str(e)
-        })
+        except Exception as e:
+            return Response({
+                "msg":"Internal server error"
+            })
     
 
 
@@ -370,9 +377,9 @@ def cancelBooking(request):
 
 
 
-# to delete a user 
+# to delete a user by admin
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated , IsAdmin])
 def deleteUser(request):
     try:
         email1 = request.query_params.get('email')
@@ -391,7 +398,7 @@ def deleteUser(request):
         })
     except Exception as e:
         return Response({
-            "msg":str(e)
+            "msg":"Internal server error"
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
@@ -411,7 +418,7 @@ class availusers(APIView):
             return Response(serializer.data)
         except Exception as e :
             return Response({
-                "msg":str(e)
+                "msg":"Internal server error"
             })
 
 
@@ -423,7 +430,12 @@ class availusers(APIView):
 class welcome(APIView):
 
     def get(self,request):
-        return Response({
-            "msg":"Hello, welcome to Hotel Management System"
-        })
+        try:
+            return Response({
+                "msg":"Hello, welcome to Hotel Management System"
+            })
+        except Exception as e:
+            return Response({
+                "msg":"Internal server error"
+            })
     

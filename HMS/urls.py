@@ -10,12 +10,12 @@ urlpatterns = [
     path('reset/',reset.as_view(),name="reset"),
     path('password/reset/<str:token>',setPassword.as_view(),name="setPassword"),
     path("room/list",availrooms.as_view(),name="availableRooms"),
-    path("room/book/<int:hotel_id>",bookRoom.as_view(),name="bookRoom"),
+    path("room/book",bookRoom.as_view(),name="bookRoom"),
     path("room/update/<int:room_id>",updateRoom,name="updateRoom"),
-    path("room/checkout",checkout,name="checkout"),
+    path("room/checkout",checkout.as_view(),name="checkout"),
     path("booking/list",listBookings.as_view(),name="listBookings"),
     path("booking/all",bookingsList.as_view(),name="bookingsList"),
-    path("booking/cancel",cancelBooking,name="cancelBooking"),
+    path("booking/cancel",cancelBooking.as_view(),name="cancelBooking"),
     path("delete",deleteUser,name="deleteUser"),
     path("users",availusers.as_view(),name="users"), #to check users
     path("welcome",welcome.as_view()), # to redirect after oauth 

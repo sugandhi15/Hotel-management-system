@@ -186,6 +186,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    # 'HMS.backends.YourCustomBackend',
 )
 
 SITE_ID = 1
@@ -207,6 +208,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None 
+ACCOUNT_USERNAME_REQUIRED = False 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
@@ -216,6 +219,32 @@ LOGOUT_REDIRECT_URL = "/accounts/"
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'allauth_debug.log',  # Log file path
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # General Django logs
+        },
+        'allauth': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',  # Detailed allauth logs
+            'propagate': True,
+        },
+    },
+}
 
 # recaptcha
 
