@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from .permissions import IsCustomer,IsManager,IsAdmin
-from .forms import SignupForm
+# from .forms import SignupForm
 
 
 
@@ -29,18 +29,13 @@ class signup(APIView):
 
     def post(self,request):
         try:
-            # serializer = Userserializer(data=request.data)
-            # if serializer.is_valid():
-            #     serializer.save()
-            #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # for recaptcha
-            form = SignupForm(request.POST)
-            if not form.is_valid():
-                return Response({
-                    "msg": "Invalid reCAPTCHA"
-                }, status=status.HTTP_400_BAD_REQUEST)
             serializer = Userserializer(data=request.data)
+            # code for recaptcha
+            # form = SignupForm(request.POST)
+            # if not form.is_valid():
+            #     return Response({
+            #         "msg": "Invalid reCAPTCHA"
+            #     }, status=status.HTTP_400_BAD_REQUEST)
             if serializer.is_valid():
                 serializer.save()
                 return Response({
