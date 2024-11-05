@@ -3,7 +3,7 @@ from .views import signup,availrooms,bookRoom,ResetPassword,reset,setPassword,up
 from rest_framework_simplejwt.views import  TokenObtainPairView,TokenRefreshView
 
 urlpatterns = [
-    path('signup/',signup.as_view(),name="addding_new_user"),
+    path('signup/',signup,name="addding_new_user"),
     path('login',  TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),    
     path('password/reset',ResetPassword.as_view(),name="passwordReset"),

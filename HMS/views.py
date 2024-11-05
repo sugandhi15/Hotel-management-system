@@ -1,11 +1,9 @@
-# from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializer import Userserializer,RoomSerializer,BookingSerializer
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from .models import Hotel,Room,Booking
 from django.core.mail import send_mail
@@ -13,42 +11,80 @@ from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from .permissions import IsCustomer,IsManager,IsAdmin
-# from .forms import SignupForm
+from .forms import SignupForm
 
 
 
 
 
+# signup page with recapcha
+def signup(request): 
+    if request.method == 'POST': 
+        form = SignupForm(request.POST) 
+        data = {
+            "email" : request.POST.get('email'),
+            "first_name" : request.POST.get('first_name'),
+            "last_name" : request.POST.get('last_name'),
+            "password" : request.POST.get('password'),
+            "account_type" : request.POST.get('account_type')
+        }
+        serializer = Userserializer(data=data)
+        if form.is_valid():
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                    return HttpResponse("You have signed up") 
+                except Exception as e:
+                    return HttpResponse(e)
+            else:
+                return HttpResponse("Please enter valid data")
+        else:
+            return HttpResponse("OOPS! Bot suspected.") 
+            
+    else: 
+        form = SignupForm() 
+          
+    return render(request, 'signup.html', {'form':form})
 
 
-# @csrf_exempt
 
 #  to register a new user
+'''
 class signup(APIView):
     permission_classes = (AllowAny,)
 
+    def get(request):
+        form = SignupForm()
+        return render(request, 'signup.html', {'form':form})
+
     def post(self,request):
         try:
-            serializer = Userserializer(data=request.data)
+            # serializer = Userserializer(data=request.data)
             # code for recaptcha
-            # form = SignupForm(request.POST)
-            # if not form.is_valid():
-            #     return Response({
-            #         "msg": "Invalid reCAPTCHA"
-            #     }, status=status.HTTP_400_BAD_REQUEST)
-            if serializer.is_valid():
-                serializer.save()
+            form = SignupForm(request.POST)
+            if form.is_valid():
                 return Response({
                     "msg": "Signed up successfully"
                 }, status=status.HTTP_201_CREATED)
-            return Response({
-                 "msg":"error occured"
-            })
+                # form.save()
+                # return Response({
+                #     "msg": "Invalid reCAPTCHA"
+                # }, status=status.HTTP_400_BAD_REQUEST)
+            # if serializer.is_valid():
+            #     serializer.save()
+            #     return Response({
+            #         "msg": "Signed up successfully"
+            #     }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    "msg":"error occured"
+                })
+            
         except Exception as e:
             return Response({
                 "msg":"Internal server error"
             })
-            
+'''      
 
 
 
