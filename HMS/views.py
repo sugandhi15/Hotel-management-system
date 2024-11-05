@@ -59,22 +59,12 @@ class signup(APIView):
 
     def post(self,request):
         try:
-            # serializer = Userserializer(data=request.data)
-            # code for recaptcha
-            form = SignupForm(request.POST)
-            if form.is_valid():
+            serializer = Userserializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
                 return Response({
                     "msg": "Signed up successfully"
                 }, status=status.HTTP_201_CREATED)
-                # form.save()
-                # return Response({
-                #     "msg": "Invalid reCAPTCHA"
-                # }, status=status.HTTP_400_BAD_REQUEST)
-            # if serializer.is_valid():
-            #     serializer.save()
-            #     return Response({
-            #         "msg": "Signed up successfully"
-            #     }, status=status.HTTP_201_CREATED)
             else:
                 return Response({
                     "msg":"error occured"
